@@ -1,70 +1,67 @@
-using System.Collections;
-using System.Collections.Generic;
+using MonkChess;
 using UnityEngine;
 
 public class moveplate : MonoBehaviour
 {
     public GameObject controller;
-    GameObject refrence = null;
+    public bool attack;
 
-    int markx, marky;
+    private Game game;
+    private SpriteRenderer spriteRenderer;
+    private Color baseColor;
+    private bool hovered;
 
+    public ChessMove Move { get; private set; }
 
-    public bool attack = false;
-
-    public void Start()
+    public void Setup(Game owner, ChessMove move, bool isAttack)
     {
-        if (attack)
-        {
-            gameObject.GetComponent<SpriteRenderer>().color = new Color(1.0f,0.0f,0.0f,1.0f);
-        }
-    }
-    public void OnMouseUp()
-    {
-        controller = GameObject.FindGameObjectWithTag("GameController");
-        if (attack)
-        {
-            GameObject cp = controller.GetComponent<Game>().Getposition(markx, marky);
-            if(cp.name == "b_k")
-            {
-                controller.GetComponent<Game>().Winner("white");
-            }
-            else if(cp.name == "w_k")
-            {
-                controller.GetComponent<Game>().Winner("black");
+        game = owner;
+        Move = move;
+        attack = isAttack;
+        controller = owner != null ? owner.gameObject : null;
 
-            }
-            Destroy(cp);
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingOrder = -4;
+            baseColor = attack
+                ? new Color(0.76f, 0.25f, 0.18f, 0.66f)
+                : new Color(1f, 0.86f, 0.56f, 0.38f);
+            spriteRenderer.color = baseColor;
         }
 
-        controller.GetComponent<Game>().Setpoistionempty(refrence.GetComponent<player>().Getxboard(), refrence.GetComponent<player>().Getyboard());
-
-        refrence.GetComponent<player>().Setxboard(markx);
-        refrence.GetComponent<player>().Setyboard(marky);
-        refrence.GetComponent<player>().SetCoords();
-        controller.GetComponent<Game>().Setposition(refrence);
-        controller.GetComponent<Game>().Nextturn();
-        refrence.GetComponent<player>().DestroyMovePlates();
-
+        gameObject.name = "MovePlate";
     }
 
-    public void SetCoords(int x,int y)
+    private void OnMouseEnter()
     {
-        markx = x;
-        marky = y;
-
+        hovered = true;
+        ApplyColor();
     }
 
-    public void SetRefrence(GameObject obj)
+    private void OnMouseExit()
     {
-        refrence = obj;
+        hovered = false;
+        ApplyColor();
     }
 
-    public GameObject Getrefrence()
+    private void ApplyColor()
     {
-        return refrence;
+        if (spriteRenderer == null)
+        {
+            return;
+        }
+
+        if (hovered)
+        {
+            Color highlight = attack
+                ? new Color(0.92f, 0.35f, 0.26f, 0.82f)
+                : new Color(1f, 0.94f, 0.72f, 0.6f);
+            spriteRenderer.color = highlight;
+        }
+        else
+        {
+            spriteRenderer.color = baseColor;
+        }
     }
-
-
-
 }

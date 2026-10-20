@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using MonkChess;
 using UnityEngine;
 
 public class player : MonoBehaviour
@@ -7,315 +6,183 @@ public class player : MonoBehaviour
     public GameObject controller;
     public GameObject moveplate;
 
-    private int xboard = -1;
-    private int yboard = -1;
-
-    private string teamcolor;
-
     public Sprite b_q, b_r, b_k, b_p, b_kt, b_b;
     public Sprite w_q, w_r, w_k, w_p, w_kt, w_b;
 
-    public void Activate()
+    private int xboard = -1;
+    private int yboard = -1;
+    private PieceType pieceType = PieceType.None;
+    private Team team = Team.None;
+    private bool selected;
+    private bool hovered;
+    private readonly Color normalColor = Color.white;
+    private readonly Color hoverColor = new Color(1f, 0.96f, 0.88f, 1f);
+    private readonly Color selectedColor = new Color(1f, 0.82f, 0.48f, 1f);
+
+    public Team Team
     {
-        controller = GameObject.FindGameObjectWithTag("GameController");
+        get { return team; }
+    }
 
-        // settings the coordinates
-        SetCoords();
+    public PieceType PieceType
+    {
+        get { return pieceType; }
+    }
 
-        switch (this.name)
-        {
-            case "b_q":this.GetComponent<SpriteRenderer>().sprite = b_q;
-                teamcolor = "black";
-                break;
-            case "b_k":
-                this.GetComponent<SpriteRenderer>().sprite = b_k;
-                teamcolor = "black";
-                break;
-            case "b_r":
-                this.GetComponent<SpriteRenderer>().sprite = b_r;
-                teamcolor = "black";
-                break;
-            case "b_kt":
-                this.GetComponent<SpriteRenderer>().sprite = b_kt;
-                teamcolor = "black";
-                break;
-            case "b_b":
-                this.GetComponent<SpriteRenderer>().sprite = b_b;
-                teamcolor = "black";
-                break;
-            case "b_p":
-                this.GetComponent<SpriteRenderer>().sprite = b_p;
-                teamcolor = "black";
-                break;
-            case "w_q":
-                this.GetComponent<SpriteRenderer>().sprite = w_q;
-                teamcolor = "white";
-                break;
-            case "w_k":
-                this.GetComponent<SpriteRenderer>().sprite = w_k;
-                teamcolor = "white";
+    public void Initialize(PieceType newType, Team newTeam)
+    {
+        pieceType = newType;
+        team = newTeam;
+        gameObject.name = BuildName(newType, newTeam);
+        ApplySprite();
+        ApplyColor();
+    }
 
-                break;
-            case "w_kt":
-                this.GetComponent<SpriteRenderer>().sprite = w_kt;
-                teamcolor = "white";
+    public void SetController(Game game)
+    {
+        controller = game.gameObject;
+    }
 
-                break;
-            case "w_p":
-                this.GetComponent<SpriteRenderer>().sprite = w_p;
-                teamcolor = "white";
-
-                break;
-            case "w_b":
-                this.GetComponent<SpriteRenderer>().sprite = w_b;
-                teamcolor = "white";
-
-                break;
-            case "w_r":
-                this.GetComponent<SpriteRenderer>().sprite = w_r;
-                teamcolor = "white";
-
-                break;
-
-        }
+    public void SetBoardPosition(int x, int y)
+    {
+        xboard = x;
+        yboard = y;
     }
 
     public void SetCoords()
     {
-        float x = xboard;
-        float y = yboard;
-        x *= 0.66f;
-        y *= 0.66f;
+        transform.position = BoardToWorld(xboard, yboard);
+    }
 
-        x += -2.3f;
-        y += -2.35f;
-
-        this.transform.position = new Vector3(x, y, 0);
+    public static Vector3 BoardToWorld(int x, int y)
+    {
+        float worldX = x * 0.66f - 2.3f;
+        float worldY = y * 0.66f - 2.35f;
+        return new Vector3(worldX, worldY, 0f);
     }
 
     public int Getxboard()
     {
         return xboard;
     }
+
     public int Getyboard()
     {
         return yboard;
     }
+
     public void Setxboard(int x)
     {
-        this.xboard = x;
+        xboard = x;
     }
+
     public void Setyboard(int y)
     {
-        this.yboard = y;
+        yboard = y;
     }
 
-
-    private void OnMouseUp()
+    public void SetSelected(bool value)
     {
-        if(!controller.GetComponent<Game>().isGameover() && controller.GetComponent<Game>().Getcurentplayer() == this.teamcolor)
-        {
-        DestroyMovePlates();
-
-        InitiateMovePlates();
-        }
-
-
+        selected = value;
+        ApplyColor();
     }
 
-    public void DestroyMovePlates()
+    public void Promote(PieceType newType)
     {
-        GameObject[] moveplates = GameObject.FindGameObjectsWithTag("MovePlate");
-        for(int i = 0;i< moveplates.Length; i++)
-        {
-            Destroy(moveplates[i]);
-        }
-        
+        pieceType = newType;
+        gameObject.name = BuildName(newType, team);
+        ApplySprite();
+        ApplyColor();
     }
 
-    public void InitiateMovePlates()
+    public Sprite GetSprite(PieceType type, Team pieceTeam)
     {
-        switch (this.name)
+        if (pieceTeam == Team.White)
         {
-
-            case "b_q":
-            case "w_q":
-                LineMovePlate(1, 0);
-                LineMovePlate(1, 1);
-                LineMovePlate(-1, 0);
-                LineMovePlate(0, -1);
-                LineMovePlate(0, 1);
-                LineMovePlate(-1, -1);
-                LineMovePlate(1, -1);
-                LineMovePlate(-1, 1);
-                break;
-            case "b_kt":
-            case "w_kt":
-                lMovePlate();
-                break;
-            case "b_b":
-            case "w_b":
-                LineMovePlate(-1, -1);
-                LineMovePlate(1, -1);
-                LineMovePlate(-1, 1);
-                LineMovePlate(1, 1);
-                break;
-            case "b_k":
-            case "w_k":
-                SurroundMovePalte();
-                break;
-            case "b_r":
-            case "w_r":
-                LineMovePlate(1, 0);
-                LineMovePlate(0, 1);
-                LineMovePlate(-1, 0);
-                LineMovePlate(0, -1);
-                break;
-            case "b_p":
-                Pawnmoveplate(xboard, yboard - 1);
-                if (yboard == 6 && controller.GetComponent<Game>().Getposition(xboard, yboard - 1) == null && controller.GetComponent<Game>().Getposition(xboard, yboard - 2) == null)
-                {
-                    Moveplatespawn(xboard, yboard - 2);
-                }
-                break;
-            case "w_p":
-                Pawnmoveplate(xboard, yboard + 1);
-                if (yboard == 1 && controller.GetComponent<Game>().Getposition(xboard, yboard + 1) == null && controller.GetComponent<Game>().Getposition(xboard, yboard + 2) == null)
-                {
-                    Moveplatespawn(xboard, yboard + 2);
-                }
-                break;
-
-
-
-        }
-    }
-    public void LineMovePlate(int xincrease,int yincrease)
-    {
-        Game sc = controller.GetComponent<Game>();
-        int x = xboard + xincrease;
-        int y = yboard + yincrease;
-        // moving wihtout attack
-        while(sc.positiononboard(x,y) && sc.Getposition(x,y) == null)
-        {
-            Moveplatespawn(x, y);
-            x += xincrease;
-            y += yincrease;
-
-        }
-        if(sc.positiononboard(x,y) && sc.Getposition(x,y).GetComponent<player>().teamcolor != teamcolor)
-        {
-            MovePlateattackspawn(x, y);
-
-        }
-
-    }
-    public void lMovePlate()
-    {
-        Pointmoveplate(xboard + 1, yboard + 2);
-        Pointmoveplate(xboard - 1, yboard + 2);
-        Pointmoveplate(xboard + 2, yboard + 1);
-        Pointmoveplate(xboard +2, yboard - 1);
-        Pointmoveplate(xboard +1, yboard - 2);
-        Pointmoveplate(xboard -1, yboard - 2);
-        Pointmoveplate(xboard -2, yboard + 1);
-        Pointmoveplate(xboard -2, yboard - 1);
-
-
-    }
-
-    public void SurroundMovePalte() {
-        Pointmoveplate(xboard + 1, yboard + 1);
-        Pointmoveplate(xboard - 1, yboard - 1);
-        Pointmoveplate(xboard + 0, yboard + 1);
-        Pointmoveplate(xboard + 1, yboard + 0);
-        Pointmoveplate(xboard - 1, yboard + 1);
-        Pointmoveplate(xboard + 1, yboard - 1);
-        Pointmoveplate(xboard + 0, yboard - 1);
-        Pointmoveplate(xboard - 1, yboard + 0);
-
-
-
-    }
-    public void Pointmoveplate(int x,int y)
-    {
-        Game g =  controller.GetComponent<Game>();
-        if (g.positiononboard(x, y))
-        {
-            GameObject pl = g.Getposition(x, y);
-            if(pl == null) // if chess piece not exist in the pos we are moving
+            switch (type)
             {
-                Moveplatespawn(x, y);
-                
+                case PieceType.Pawn: return w_p;
+                case PieceType.Knight: return w_kt;
+                case PieceType.Bishop: return w_b;
+                case PieceType.Rook: return w_r;
+                case PieceType.Queen: return w_q;
+                case PieceType.King: return w_k;
             }
-            else if(pl.GetComponent<player>().teamcolor != teamcolor)
+        }
+        else if (pieceTeam == Team.Black)
+        {
+            switch (type)
             {
-                MovePlateattackspawn(x, y);
+                case PieceType.Pawn: return b_p;
+                case PieceType.Knight: return b_kt;
+                case PieceType.Bishop: return b_b;
+                case PieceType.Rook: return b_r;
+                case PieceType.Queen: return b_q;
+                case PieceType.King: return b_k;
             }
         }
 
-    }   
-    public void Moveplatespawn(int x,int y)
-    {
-        float  localx = x;
-        float localy = y;
-
-        localx *= 0.66f;
-        localy *= 0.66f;
-
-        localx += -2.3f;
-        localy += -2.35f;
-
-        GameObject rf = Instantiate(moveplate, new Vector3(localx, localy, 0), Quaternion.identity);
-        moveplate script = rf.GetComponent<moveplate>();
-        script.SetRefrence(gameObject);
-        script.SetCoords(x, y);
-
-
-
-
-
+        return null;
     }
-    public void MovePlateattackspawn(int x,int y)
+
+    private void ApplySprite()
     {
-        float localx = x;
-        float localy = y;
-
-        localx *= 0.66f;
-        localy *= 0.66f;
-
-        localx += -2.3f;
-        localy += -2.35f;
-
-        GameObject rf = Instantiate(moveplate, new Vector3(localx, localy, 0), Quaternion.identity);
-        moveplate script = rf.GetComponent<moveplate>();
-        script.attack = true;
-        script.SetRefrence(gameObject);
-        script.SetCoords(x, y);
-
-
-    }
-    public void Pawnmoveplate(int x,int y)
-    {
-        Game game = controller.GetComponent<Game>();
-        if (game.positiononboard(x, y))
+        SpriteRenderer renderer = GetComponent<SpriteRenderer>();
+        if (renderer != null)
         {
-            if(game.Getposition(x,y) == null)
-            {
-                Moveplatespawn(x, y);
-            }
-            if(game.positiononboard(x+1,y) && game.Getposition(x+1,y) != null && game.Getposition(x+1,y).GetComponent<player>().teamcolor != teamcolor)
-            {
-                MovePlateattackspawn(x+1,y);
-            }
-            if (game.positiononboard(x - 1, y) && game.Getposition(x - 1, y) != null && game.Getposition(x - 1, y).GetComponent<player>().teamcolor != teamcolor)
-            {
-                MovePlateattackspawn(x - 1, y);
-            }
+            renderer.sprite = GetSprite(pieceType, team);
+        }
+    }
+
+    private void ApplyColor()
+    {
+        SpriteRenderer renderer = GetComponent<SpriteRenderer>();
+        if (renderer == null)
+        {
+            return;
         }
 
+        if (selected)
+        {
+            renderer.color = selectedColor;
+        }
+        else if (hovered)
+        {
+            renderer.color = hoverColor;
+        }
+        else
+        {
+            renderer.color = normalColor;
+        }
     }
- 
 
+    private void OnMouseEnter()
+    {
+        hovered = true;
+        ApplyColor();
+    }
 
+    private void OnMouseExit()
+    {
+        hovered = false;
+        ApplyColor();
+    }
+
+    public static string BuildName(PieceType type, Team pieceTeam)
+    {
+        string prefix = pieceTeam == Team.White ? "w" : "b";
+        string suffix;
+        switch (type)
+        {
+            case PieceType.Pawn: suffix = "p"; break;
+            case PieceType.Knight: suffix = "kt"; break;
+            case PieceType.Bishop: suffix = "b"; break;
+            case PieceType.Rook: suffix = "r"; break;
+            case PieceType.Queen: suffix = "q"; break;
+            case PieceType.King: suffix = "k"; break;
+            default: suffix = "?"; break;
+        }
+
+        return prefix + "_" + suffix;
+    }
 }
