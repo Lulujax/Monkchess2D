@@ -173,15 +173,18 @@ public class player : MonoBehaviour
                 break;
             case "b_p":
                 Pawnmoveplate(xboard, yboard - 1);
+                if (yboard == 6 && controller.GetComponent<Game>().Getposition(xboard, yboard - 1) == null && controller.GetComponent<Game>().Getposition(xboard, yboard - 2) == null)
+                {
+                    Moveplatespawn(xboard, yboard - 2);
+                }
                 break;
             case "w_p":
                 Pawnmoveplate(xboard, yboard + 1);
+                if (yboard == 1 && controller.GetComponent<Game>().Getposition(xboard, yboard + 1) == null && controller.GetComponent<Game>().Getposition(xboard, yboard + 2) == null)
+                {
+                    Moveplatespawn(xboard, yboard + 2);
+                }
                 break;
-
-
-
-
-
 
 
 

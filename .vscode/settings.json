@@ -1,1 +1,8 @@
-{}
+{
+    "csharp-dev-tools.solutionViewer.selectedWorkspaceSolutions": [
+        "Chess2d.sln",
+        "Monkchess2D.sln",
+        "Monkchess2D.slnx"
+    ],
+    "dotnet.defaultSolution": "Chess2d.sln"
+}

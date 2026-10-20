@@ -5,6 +5,13 @@ TagManager:
   serializedVersion: 3
   tags:
   - MovePlate
+  - turn1
+  - turn2
+  - win
+  - whitewon
+  - blackwon
+  - restart
+  - gameover
   layers:
   - Default
   - TransparentFX
